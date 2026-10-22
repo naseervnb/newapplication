@@ -1,0 +1,3 @@
+ubuntu@ip-172-31-19-2:~$ sudo docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+
+f86b0934bb704c2e8bc3ecd0b74a7f16

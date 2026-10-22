@@ -1,0 +1,13 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+
+# Build outputs and large binaries
+imageapp2026/dist/
+*.exe
+*.dll
+target/
+.DS_Store
