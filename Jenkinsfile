@@ -4,20 +4,19 @@ pipeline {
     stages {
         stage('Build with Maven') {
             steps {
-                sh '''
-                    # Check if mvn exists, if not download via curl and set it up locally
-                    if ! command -v mvn &> /dev/null; then
-                        echo "Maven not found. Downloading via curl..."
-                        curl -sO https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
-                        tar -xzf apache-maven-3.8.6-bin.tar.gz
-                    fi
-                    
-                    # Add local maven to PATH for this build
-                    export PATH=$PWD/apache-maven-3.8.6/bin:$PATH
-                    
-                    # Run the build from the root directory
-                    mvn clean package
-                '''
+                dir('imageapp2026') {
+                    sh '''
+                        # Download Maven dynamically if not present
+                        if ! command -v mvn &> /dev/null; then
+                            echo "Downloading Maven..."
+                            curl -sO https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+                            tar -xzf apache-maven-3.8.6-bin.tar.gz
+                        fi
+                        
+                        export PATH=$PWD/apache-maven-3.8.6/bin:$PATH
+                        mvn clean package
+                    '''
+                }
             }
         }
 
@@ -34,7 +33,7 @@ pipeline {
                     artifacts: [
                         [artifactId: 'image-compressor',
                          classifier: '',
-                         file: 'target/image-compressor.war',
+                         file: 'imageapp2026/target/image-compressor.war',
                          type: 'war']
                     ]
                 )
