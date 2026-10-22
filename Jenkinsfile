@@ -43,12 +43,9 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 sh '''
-                    echo "Deploying artifact to Tomcat..."
-                    # If Tomcat is running locally on the EC2 instance or container, 
-                    # you can copy the built .war directly to Tomcat's webapps directory:
-                    # cp imageapp2026/target/image-compressor.war /path/to/tomcat/webapps/image-compressor.war
-                    
-                    echo "Deployment step ready. Adjust the target path based on your Tomcat setup!"
+                    echo "Deploying artifact to Tomcat webapps directory..."
+                    cp imageapp2026/target/image-compressor.war /var/lib/tomcat/webapps/image-compressor.war
+                    echo "Deployment complete!"
                 '''
             }
         }
