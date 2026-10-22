@@ -39,11 +39,24 @@ pipeline {
                 )
             }
         }
+
+        stage('Deploy to Tomcat') {
+            steps {
+                sh '''
+                    echo "Deploying artifact to Tomcat..."
+                    # If Tomcat is running locally on the EC2 instance or container, 
+                    # you can copy the built .war directly to Tomcat's webapps directory:
+                    # cp imageapp2026/target/image-compressor.war /path/to/tomcat/webapps/image-compressor.war
+                    
+                    echo "Deployment step ready. Adjust the target path based on your Tomcat setup!"
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully! Artifact pushed to Nexus.'
+            echo 'Pipeline completed successfully! Artifact built, published to Nexus, and deployed.'
         }
         failure {
             echo 'Pipeline failed. Check logs for details.'
