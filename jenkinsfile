@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3' 
+        // This automatically installs Maven for the build if it's missing
+        maven 'M3' 
     }
 
     stages {
@@ -24,6 +25,7 @@ pipeline {
                     credentialsId: 'nexus-credentials',
                     protocol: 'http',
                     nexusUrl: '3.90.5.208:8081',
+                    nexusVersion: 'nexus3',
                     groupId: 'com.compressor',
                     version: "${env.BUILD_ID}",
                     repository: 'maven-releases',
