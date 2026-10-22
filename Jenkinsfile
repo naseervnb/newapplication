@@ -1,13 +1,11 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.8.6-eclipse-temurin-11'
+        }
+    }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/naseervnb/newapplication.git'
-            }
-        }
-
         stage('Build with Maven') {
             steps {
                 sh 'mvn clean package'
