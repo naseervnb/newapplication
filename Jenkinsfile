@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        // This automatically installs Maven for the build if it's missing
-        maven 'M3' 
-    }
-
     stages {
         stage('Checkout Code') {
             steps {
