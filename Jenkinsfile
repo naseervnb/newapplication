@@ -1,14 +1,23 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.8.6-eclipse-temurin-11'
-        }
-    }
+    agent any
 
     stages {
         stage('Build with Maven') {
             steps {
-                sh 'mvn clean package'
+                sh '''
+                    # Check if mvn exists, if not download and set it up locally in the workspace
+                    if ! command -v mvn &> /dev/null; then
+                        echo "Maven not found. Downloading Apache Maven..."
+                        wget -q https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+                        tar -xzf apache-maven-3.8.6-bin.tar.gz
+                    fi
+                    
+                    # Add local maven to PATH for this build
+                    export PATH=$PWD/apache-maven-3.8.6/bin:$PATH
+                    
+                    # Run the build
+                    mvn clean package
+                '''
             }
         }
 
