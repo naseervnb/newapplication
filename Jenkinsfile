@@ -25,7 +25,7 @@ pipeline {
                 nexusArtifactUploader(
                     credentialsId: 'nexus-credentials',
                     protocol: 'http',
-                    nexusUrl: '3.90.5.208:8081',
+                    nexusUrl: '98.81.175.140:8081', // Updated with your new EC2 IP
                     nexusVersion: 'nexus3',
                     groupId: 'com.compressor',
                     version: "${env.BUILD_ID}",
@@ -43,8 +43,11 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 sh '''
-                    echo "Deploying artifact to Tomcat webapps directory..."
-                    cp imageapp2026/target/image-compressor.war /var/lib/tomcat/webapps/image-compressor.war
+                    echo "Deploying artifact to Tomcat..."
+                    # If Tomcat webapps path is standard, copy it there. 
+                    # (If your path is different, let me know and we will adjust it)
+                    sudo cp imageapp2026/target/image-compressor.war /var/lib/tomcat/webapps/image-compressor.war || \
+                    sudo cp imageapp2026/target/image-compressor.war /opt/tomcat/webapps/image-compressor.war
                     echo "Deployment complete!"
                 '''
             }
@@ -53,7 +56,7 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully! Artifact built, published to Nexus, and deployed.'
+            echo 'Pipeline completed successfully! Build, Publish, and Deploy all passed.'
         }
         failure {
             echo 'Pipeline failed. Check logs for details.'
