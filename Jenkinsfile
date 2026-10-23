@@ -25,7 +25,7 @@ pipeline {
                 nexusArtifactUploader(
                     credentialsId: 'nexus-credentials',
                     protocol: 'http',
-                    nexusUrl: '98.81.175.140:8081', // Updated with your new EC2 IP
+                    nexusUrl: '98.81.175.140:8081',
                     nexusVersion: 'nexus3',
                     groupId: 'com.compressor',
                     version: "${env.BUILD_ID}",
@@ -43,11 +43,8 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 sh '''
-                    echo "Deploying artifact to Tomcat..."
-                    # If Tomcat webapps path is standard, copy it there. 
-                    # (If your path is different, let me know and we will adjust it)
-                    sudo cp imageapp2026/target/image-compressor.war /var/lib/tomcat/webapps/image-compressor.war || \
-                    sudo cp imageapp2026/target/image-compressor.war /opt/tomcat/webapps/image-compressor.war
+                    echo "Copying artifact to Tomcat container..."
+                    docker cp imageapp2026/target/image-compressor.war tomcat-server:/usr/local/tomcat/webapps/image-compressor.war
                     echo "Deployment complete!"
                 '''
             }
