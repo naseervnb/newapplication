@@ -6,13 +6,13 @@ import boto3
 
 app = Flask(__name__)
 
-# Initialize AWS clients (automatically picks up the EC2 IAM Role permissions)
+# Initialize AWS clients
 s3_client = boto3.client('s3', region_name='us-east-1')
 sns_client = boto3.client('sns', region_name='us-east-1')
 
-# Your AWS resource configurations
+# Correct Topic ARN (without the trailing subscription ID)
 S3_BUCKET_NAME = 'image-compressor-backup-nas'
-SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:100458165777:image-compressor-alerts:0988ce7b-0ab3-4a39-8956-e0f831145477'  # Replace with your actual SNS Topic ARN
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:100458165777:image-compressor-alerts'
 
 @app.route('/')
 def index():
@@ -33,7 +33,6 @@ def upload_image():
     if file.filename == '':
         return "No selected file", 400
 
-    # Read file bytes once into memory so we can safely reuse the stream
     file_bytes = file.read()
 
     try:
