@@ -1,24 +1,30 @@
-from flask import Flask, render_template, request
+import io
+import os
+from flask import Flask, request, render_template
 from PIL import Image
 import boto3
-import io
 
 app = Flask(__name__)
 
-# 1. Home route to display your upload form/interface
+# Initialize AWS clients (ensure your EC2 instance has an IAM role with S3 and SNS permissions)
+s3_client = boto3.client('s3', region_name='us-east-1')
+sns_client = boto3.client('sns', region_name='us-east-1')
+
+# Your configured AWS resources and mobile number
+S3_BUCKET_NAME = 'your-image-backup-bucket-name'
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:123456789012:your-image-notification-topic'
+MOBILE_NUMBER = '+918248882101'
+
 @app.route('/')
 def index():
-    # If you have an HTML template, use: return render_template('index.html')
-    # Or return a simple HTML string for testing:
     return '''
         <h2>Image Compressor with S3 Backup & SNS</h2>
         <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <input type="submit" value="Upload & Compress">
+            <input type="file" name="file" required>
+            <input type="submit" value="Upload, Compress & Notify">
         </form>
     '''
 
-# 2. Upload route to handle the file, S3 backup, compression, and SNS alert
 @app.route('/upload', methods=['POST'])
 def upload_image():
     if 'file' not in request.files:
@@ -28,18 +34,32 @@ def upload_image():
     if file.filename == '':
         return "No selected file", 400
 
-    # Read file bytes once for reuse
+    # Read file bytes once into memory so we can reuse the stream safely
     file_bytes = file.read()
 
-    # Backup original file to S3
-    s3 = boto3.client('s3')
-    s3.upload_fileobj(io.BytesIO(file_bytes), 'YOUR_S3_BUCKET_NAME', file.filename)
+    try:
+        # 1. Backup the original image to S3
+        s3_client.upload_fileobj(io.BytesIO(file_bytes), S3_BUCKET_NAME, file.filename)
 
-    # Process image with Pillow
-    image = Image.open(io.BytesIO(file_bytes))
-    # ... add your compression / SNS notification logic here ...
+        # 2. Process/Compress the image using Pillow
+        image = Image.open(io.BytesIO(file_bytes))
+        
+        output_io = io.BytesIO()
+        image.save(output_io, format='JPEG', quality=75)
+        output_io.seek(0)
 
-    return "Image processed successfully, backed up to S3, and notification sent!"
+        # 3. Send an SNS notification including your mobile number reference
+        message = f"Alert for {MOBILE_NUMBER}: Success! The image '{file.filename}' was uploaded, backed up to S3 bucket '{S3_BUCKET_NAME}', and compressed."
+        sns_client.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Message=message,
+            Subject="Image Compression & S3 Backup Alert"
+        )
+
+        return f"<h3>{message}</h3><br><a href='/'>Upload Another</a>"
+
+    except Exception as e:
+        return f"Error processing image or communicating with AWS: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
