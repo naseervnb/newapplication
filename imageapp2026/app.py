@@ -20,28 +20,36 @@ def index():
     return '''
         <h2>Image Compressor & Folder Organizer</h2>
         <form action="/upload" method="post" enctype="multipart/form-data">
-            <p>Select multiple files or an entire folder (subfolders supported):</p>
-            <input type="file" name="files" webkitdirectory directory multiple required><br><br>
-            <input type="submit" value="Process, Back up & Convert">
+            <fieldset style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                <legend><b>Option A: Select Individual Files (Any type: Images, PSD, XML, PPT, etc.)</b></legend>
+                <input type="file" name="files" multiple>
+            </fieldset>
+
+            <fieldset style="border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+                <legend><b>Option B: Select an Entire Folder (Supports subfolders)</b></legend>
+                <input type="file" name="folder" webkitdirectory directory multiple>
+            </fieldset>
+
+            <input type="submit" value="Process, Back up & Convert" style="padding: 8px 15px; font-weight: bold;">
         </form>
     '''
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
-    # Grabs all files from the single unified input field (supports files and full folder selection)
-    uploaded_files = request.files.getlist('files')
+    # Gather files from both the file picker and the folder picker
+    uploaded_files = request.files.getlist('files') + request.files.getlist('folder')
     
-    if not uploaded_files or uploaded_files[0].filename == '':
+    # Filter out empty entries
+    uploaded_files = [f for f in uploaded_files if f.filename]
+
+    if not uploaded_files:
         return "No files or folder selected", 400
 
     processed_count = 0
 
     try:
         for file in uploaded_files:
-            if not file.filename:
-                continue
-            
-            file_path = file.filename  # Maintains relative subfolder paths automatically
+            file_path = file.filename  # Maintains relative subfolder paths if a folder was chosen
             file_bytes = file.read()
             file_ext = file_path.lower().split('.')[-1]
 
