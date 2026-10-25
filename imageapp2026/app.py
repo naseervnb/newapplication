@@ -17,10 +17,10 @@ SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:100458165777:image-compressor-alerts'
 @app.route('/')
 def index():
     return '''
-        <h2>Image Compressor, S3 Backup & Direct Downloader</h2>
+        <h2>Image Compressor</h2>
         <form action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="file" required>
-            <input type="submit" value="Compress, Backup & Download">
+            <input type="submit" value="Compress & Download">
         </form>
     '''
 
@@ -43,7 +43,7 @@ def upload_image():
         image = Image.open(io.BytesIO(file_bytes))
         
         output_io = io.BytesIO()
-        image.save(output_io, format='JPEG', quality=75)  # Adjust quality (e.g., 75) as needed
+        image.save(output_io, format='JPEG', quality=75)
         output_io.seek(0)
 
         # 3. Send SNS email notification
