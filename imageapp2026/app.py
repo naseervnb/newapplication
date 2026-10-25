@@ -36,16 +36,21 @@ def upload_image():
     file_bytes = file.read()
 
     try:
-        # 1. Automatically back up the original image to S3
+        print(f"Starting S3 upload for: {file.filename}")
+        # 1. Back up original image to S3
         s3_client.upload_fileobj(io.BytesIO(file_bytes), S3_BUCKET_NAME, file.filename)
+        print("S3 upload successful!")
 
+        print("Processing image compression...")
         # 2. Compress the image using Pillow in memory
         image = Image.open(io.BytesIO(file_bytes))
         
         output_io = io.BytesIO()
         image.save(output_io, format='JPEG', quality=75)
         output_io.seek(0)
+        print("Image compression successful!")
 
+        print(f"Publishing SNS notification to: {SNS_TOPIC_ARN}")
         # 3. Send SNS email notification
         message = f"Success! The image '{file.filename}' was uploaded, backed up to S3 bucket '{S3_BUCKET_NAME}', compressed, and downloaded."
         sns_client.publish(
@@ -53,6 +58,7 @@ def upload_image():
             Message=message,
             Subject="Image Compression & S3 Backup Alert"
         )
+        print("SNS notification published successfully!")
 
         # 4. Stream the compressed image directly to the user's browser for download
         return send_file(
@@ -63,6 +69,7 @@ def upload_image():
         )
 
     except Exception as e:
+        print(f"ERROR OCCURRED: {str(e)}")
         return f"Error processing image or communicating with AWS: {str(e)}", 500
 
 if __name__ == '__main__':
