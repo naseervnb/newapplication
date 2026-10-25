@@ -11,7 +11,7 @@ s3_client = boto3.client('s3', region_name='us-east-1')
 sns_client = boto3.client('sns', region_name='us-east-1')
 
 # Your configured AWS resources and mobile number
-S3_BUCKET_NAME = 'your-image-backup-bucket-name'
+S3_BUCKET_NAME = 'image-compressor-backup-nas'
 SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:123456789012:your-image-notification-topic'
 MOBILE_NUMBER = '+918248882101'
 
