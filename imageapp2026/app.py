@@ -6,19 +6,18 @@ import boto3
 
 app = Flask(__name__)
 
-# Initialize AWS clients (ensure your EC2 instance has an IAM role with S3 and SNS permissions)
+# Initialize AWS clients (automatically picks up the EC2 IAM Role permissions)
 s3_client = boto3.client('s3', region_name='us-east-1')
 sns_client = boto3.client('sns', region_name='us-east-1')
 
-# Your configured AWS resources and mobile number
+# Your AWS resource configurations
 S3_BUCKET_NAME = 'image-compressor-backup-nas'
-SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:123456789012:your-image-notification-topic'
-MOBILE_NUMBER = '+918248882101'
+SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:100458165777:image-compressor-alerts:0988ce7b-0ab3-4a39-8956-e0f831145477'  # Replace with your actual SNS Topic ARN
 
 @app.route('/')
 def index():
     return '''
-        <h2>Image Compressor with S3 Backup & SNS</h2>
+        <h2>Image Compressor with S3 Backup & SNS Email Alert</h2>
         <form action="/upload" method="post" enctype="multipart/form-data">
             <input type="file" name="file" required>
             <input type="submit" value="Upload, Compress & Notify">
@@ -34,7 +33,7 @@ def upload_image():
     if file.filename == '':
         return "No selected file", 400
 
-    # Read file bytes once into memory so we can reuse the stream safely
+    # Read file bytes once into memory so we can safely reuse the stream
     file_bytes = file.read()
 
     try:
@@ -48,8 +47,8 @@ def upload_image():
         image.save(output_io, format='JPEG', quality=75)
         output_io.seek(0)
 
-        # 3. Send an SNS notification including your mobile number reference
-        message = f"Alert for {MOBILE_NUMBER}: Success! The image '{file.filename}' was uploaded, backed up to S3 bucket '{S3_BUCKET_NAME}', and compressed."
+        # 3. Send an SNS email notification
+        message = f"Success! The image '{file.filename}' was uploaded, backed up to S3 bucket '{S3_BUCKET_NAME}', and compressed."
         sns_client.publish(
             TopicArn=SNS_TOPIC_ARN,
             Message=message,
